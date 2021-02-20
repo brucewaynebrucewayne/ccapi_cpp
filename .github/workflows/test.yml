@@ -31,7 +31,7 @@ jobs:
         #   }
         # TODO: "Windows Latest MinGW" is not working yet: https://github.com/zaphoyd/websocketpp/blob/master/docs/faq.dox, search for _WEBSOCKETPP_MINGW_THREAD_
         - {
-            name: "Windows Latest MinGW"
+            name: "Windows Latest MinGW",
             # , artifact: "Windows-MinGW.tar.xz",
             os: windows-latest,
             cc: "gcc", cxx: "g++"
