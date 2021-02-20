@@ -203,7 +203,7 @@ jobs:
             -S example
             -B example/build
             -D CMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
-            -G Ninja
+            -G "MinGW Makefiles"
             -D CMAKE_MAKE_PROGRAM=ninja
             # -D CMAKE_C_COMPILER_LAUNCHER=ccache
             # -D CMAKE_CXX_COMPILER_LAUNCHER=ccache
