@@ -2,9 +2,10 @@
 #define INCLUDE_CCAPI_CPP_CCAPI_URL_H_
 #include <string>
 #include <regex>
-namespace beast = boost::beast;
+#include "ccapi_cpp/ccapi_macro.h"
+#include "ccapi_cpp/ccapi_util_private.h"
 namespace ccapi {
-class Url final {
+class Url CCAPI_FINAL {
  public:
   explicit Url(std::string urlStr) {
     std::regex ex("^(.*:)//([A-Za-z0-9\\-\\.]+)(:[0-9]+)?(.*)$");
@@ -54,6 +55,14 @@ class Url final {
       }
     }
     return (ret);
+  }
+  static std::map<std::string, std::string> convertQueryStringToMap(const std::string &input) {
+    std::map<std::string, std::string> output;
+    for (const auto & x : UtilString::split(input, "&")) {
+      auto y = UtilString::split(x, "=");
+      output.insert(std::make_pair(y.at(0), y.at(1)));
+    }
+    return output;
   }
   std::string protocol;
   std::string host;
