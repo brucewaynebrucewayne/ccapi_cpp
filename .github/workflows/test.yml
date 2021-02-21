@@ -253,7 +253,7 @@ jobs:
         endif()
         set(ENV{PATH} "$ENV{GITHUB_WORKSPACE}${path_separator}$ENV{PATH}")
 
-        file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}" ccache_basedir)
+        # file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}" ccache_basedir)
         # set(ENV{CCACHE_BASEDIR} "${ccache_basedir}")
         # set(ENV{CCACHE_DIR} "${ccache_basedir}/.ccache")
         # set(ENV{CCACHE_COMPRESS} "true")
@@ -274,13 +274,13 @@ jobs:
           message(FATAL_ERROR "Bad exit status")
         endif()
 
-        execute_process(
-          COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake --build example/build -j
-          RESULT_VARIABLE result
-        )
-        if (NOT result EQUAL 0)
-          message(FATAL_ERROR "Bad exit status")
-        endif()
+        # execute_process(
+        #   COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake --build example/build -j
+        #   RESULT_VARIABLE result
+        # )
+        # if (NOT result EQUAL 0)
+        #   message(FATAL_ERROR "Bad exit status")
+        # endif()
 
         # if ("${{ runner.os }}" STREQUAL "macOS" OR "${{ runner.os }}" STREQUAL "Linux")
         #   execute_process(
