@@ -192,11 +192,11 @@ jobs:
         # execute_process(
           # COMMAND cmake
             # -DBUILD_TEST_BUILD=ON
-            -DBUILD_TEST_UNIT=ON
-            -S test
-            -B test/build
-            -D CMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
-            -G "MinGW Makefiles"
+            # -DBUILD_TEST_UNIT=ON
+            # -S test
+            # -B test/build
+            # -D CMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
+            # -G "MinGW Makefiles"
             # -D CMAKE_MAKE_PROGRAM=ninja
             # -D CMAKE_C_COMPILER_LAUNCHER=ccache
             # -D CMAKE_CXX_COMPILER_LAUNCHER=ccache
