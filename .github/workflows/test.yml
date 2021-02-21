@@ -55,7 +55,7 @@ jobs:
     - uses: msys2/setup-msys2@v2
       with:
         msystem: MINGW64
-        # install: cmake
+        install: cmake
 
     # - name: Download Ninja and CMake
     #   id: cmake_and_ninja
