@@ -188,7 +188,7 @@ jobs:
         # endif()
         # set(ENV{PATH} "$ENV{GITHUB_WORKSPACE}${path_separator}$ENV{PATH}")
         #
-        cmake -DBUILD_TEST_UNIT=ON  -DCMAKE_BUILD_TYPE=Debug -DMSYS2_FOLDER="D:/a/_temp/msys" -S test -B test/build
+        cmake -DGTEST_OS_CYGWIN=1 -DBUILD_TEST_UNIT=ON  -DCMAKE_BUILD_TYPE=Debug -DMSYS2_FOLDER="D:/a/_temp/msys" -S test -B test/build
         # execute_process(
           # COMMAND cmake
             # -DBUILD_TEST_BUILD=ON
