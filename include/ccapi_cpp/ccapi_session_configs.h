@@ -6,13 +6,16 @@
 #include <vector>
 #include <set>
 #include "ccapi_cpp/ccapi_logger.h"
+#include "ccapi_cpp/ccapi_util_private.h"
 namespace ccapi {
-class SessionConfigs final {
+class SessionConfigs CCAPI_FINAL {
  public:
   SessionConfigs() : SessionConfigs({}, {}, {}) {
   }
   explicit SessionConfigs(std::map<std::string, std::map<std::string, std::string> > exchangeInstrumentSymbolMap, std::map<std::string, std::map<std::string, std::string> > exchangeInstrumentSymbolMapRest = {}, std::map<std::string, std::string > credential = {})
       : exchangeInstrumentSymbolMap(exchangeInstrumentSymbolMap), exchangeInstrumentSymbolMapRest(exchangeInstrumentSymbolMapRest), credential(credential) {
+    this->exchangeSymbolInstrumentMap = this->invertInstrumentSymbolMap(exchangeInstrumentSymbolMap);
+    this->exchangeSymbolInstrumentMapRest = this->invertInstrumentSymbolMap(exchangeInstrumentSymbolMapRest);
     this->updateExchangeInstrumentMap();
     this->updateExchangeInstrumentMapRest();
   }
@@ -25,12 +28,14 @@ class SessionConfigs final {
   void setExchangeInstrumentSymbolMap(
       const std::map<std::string, std::map<std::string, std::string> >& exchangeInstrumentSymbolMap) {
     this->exchangeInstrumentSymbolMap = exchangeInstrumentSymbolMap;
+    this->exchangeSymbolInstrumentMap = this->invertInstrumentSymbolMap(exchangeInstrumentSymbolMap);
     this->updateExchangeInstrumentMap();
     this->updateExchangeInstrumentMapRest();
   }
   void setExchangeInstrumentSymbolMapRest(
       const std::map<std::string, std::map<std::string, std::string> >& exchangeInstrumentSymbolMapRest) {
     this->exchangeInstrumentSymbolMapRest = exchangeInstrumentSymbolMapRest;
+    this->exchangeSymbolInstrumentMapRest = this->invertInstrumentSymbolMap(exchangeInstrumentSymbolMapRest);
     this->updateExchangeInstrumentMapRest();
   }
   const std::map<std::string, std::vector<std::string> >& getExchangeInstrumentMap() const {
@@ -48,9 +53,6 @@ class SessionConfigs final {
   const std::map<std::string, std::vector<int> >& getWebsocketAvailableMarketDepth() const {
     return websocketAvailableMarketDepth;
   }
-//  const std::map<std::string, int>& getWebsocketMaxAvailableMarketDepth() const {
-//    return websocketMaxAvailableMarketDepth;
-//  }
   const std::map<std::string, std::string>& getUrlWebsocketBase() const {
     return urlWebsocketBase;
   }
@@ -66,6 +68,12 @@ class SessionConfigs final {
   void setCredential(const std::map<std::string, std::string>& credential) {
     this->credential = credential;
   }
+  const std::map<std::string, std::map<std::string, std::string> >& getExchangeSymbolInstrumentMap() const {
+    return exchangeSymbolInstrumentMap;
+  }
+  const std::map<std::string, std::map<std::string, std::string> >& getExchangeSymbolInstrumentMapRest() const {
+    return exchangeSymbolInstrumentMapRest;
+  }
 
  private:
   void updateExchangeInstrumentMap() {
@@ -75,60 +83,62 @@ class SessionConfigs final {
       }
     }
     std::map<std::string, std::string> fieldWebsocketChannelMapCoinbase = { {
-    CCAPI_EXCHANGE_NAME_TRADE,
-    CCAPI_EXCHANGE_NAME_WEBSOCKET_COINBASE_CHANNEL_MATCH }, {
-    CCAPI_EXCHANGE_NAME_MARKET_DEPTH,
-    CCAPI_EXCHANGE_NAME_WEBSOCKET_COINBASE_CHANNEL_LEVEL2 }, };
+    CCAPI_TRADE,
+    CCAPI_WEBSOCKET_COINBASE_CHANNEL_MATCH }, {
+    CCAPI_MARKET_DEPTH,
+    CCAPI_WEBSOCKET_COINBASE_CHANNEL_LEVEL2 }, };
     std::map<std::string, std::string> fieldWebsocketChannelMapGemini =
         { {
-        CCAPI_EXCHANGE_NAME_TRADE,
-        CCAPI_EXCHANGE_NAME_WEBSOCKET_GEMINI_PARAMETER_TRADES }, {
-        CCAPI_EXCHANGE_NAME_MARKET_DEPTH, std::string(
-        CCAPI_EXCHANGE_NAME_WEBSOCKET_GEMINI_PARAMETER_BIDS) + ","
-            + CCAPI_EXCHANGE_NAME_WEBSOCKET_GEMINI_PARAMETER_OFFERS }, };
+        CCAPI_TRADE,
+        CCAPI_WEBSOCKET_GEMINI_PARAMETER_TRADES }, {
+        CCAPI_MARKET_DEPTH, std::string(
+        CCAPI_WEBSOCKET_GEMINI_PARAMETER_BIDS) + ","
+            + CCAPI_WEBSOCKET_GEMINI_PARAMETER_OFFERS }, };
     std::map<std::string, std::string> fieldWebsocketChannelMapKraken = { {
-    CCAPI_EXCHANGE_NAME_TRADE,
-    CCAPI_EXCHANGE_NAME_WEBSOCKET_KRAKEN_CHANNEL_TRADE }, {
-    CCAPI_EXCHANGE_NAME_MARKET_DEPTH,
-    CCAPI_EXCHANGE_NAME_WEBSOCKET_KRAKEN_CHANNEL_BOOK }, };
+    CCAPI_TRADE,
+    CCAPI_WEBSOCKET_KRAKEN_CHANNEL_TRADE }, {
+    CCAPI_MARKET_DEPTH,
+    CCAPI_WEBSOCKET_KRAKEN_CHANNEL_BOOK }, };
     std::map<std::string, std::string> fieldWebsocketChannelMapBitstamp = { {
-    CCAPI_EXCHANGE_NAME_TRADE,
-    CCAPI_EXCHANGE_NAME_WEBSOCKET_BITSTAMP_CHANNEL_LIVE_TRADES }, {
-    CCAPI_EXCHANGE_NAME_MARKET_DEPTH,
-    CCAPI_EXCHANGE_NAME_WEBSOCKET_BITSTAMP_CHANNEL_ORDER_BOOK }, };
+    CCAPI_TRADE,
+    CCAPI_WEBSOCKET_BITSTAMP_CHANNEL_LIVE_TRADES }, {
+    CCAPI_MARKET_DEPTH,
+    CCAPI_WEBSOCKET_BITSTAMP_CHANNEL_ORDER_BOOK }, };
     std::map<std::string, std::string> fieldWebsocketChannelMapBitfinex = { {
-    CCAPI_EXCHANGE_NAME_TRADE,
-    CCAPI_EXCHANGE_NAME_WEBSOCKET_BITFINEX_CHANNEL_TRADES }, {
-    CCAPI_EXCHANGE_NAME_MARKET_DEPTH,
-    CCAPI_EXCHANGE_NAME_WEBSOCKET_BITFINEX_CHANNEL_BOOK }, };
+    CCAPI_TRADE,
+    CCAPI_WEBSOCKET_BITFINEX_CHANNEL_TRADES }, {
+    CCAPI_MARKET_DEPTH,
+    CCAPI_WEBSOCKET_BITFINEX_CHANNEL_BOOK }, };
     std::map<std::string, std::string> fieldWebsocketChannelMapBitmex = { {
-    CCAPI_EXCHANGE_NAME_TRADE,
-    CCAPI_EXCHANGE_NAME_WEBSOCKET_BITMEX_CHANNEL_TRADE }, {
-    CCAPI_EXCHANGE_NAME_MARKET_DEPTH,
-    CCAPI_EXCHANGE_NAME_WEBSOCKET_BITMEX_CHANNEL_ORDER_BOOK_L2 }, };
+    CCAPI_TRADE,
+    CCAPI_WEBSOCKET_BITMEX_CHANNEL_TRADE }, {
+    CCAPI_MARKET_DEPTH,
+    CCAPI_WEBSOCKET_BITMEX_CHANNEL_ORDER_BOOK_L2 }, };
     std::map<std::string, std::string> fieldWebsocketChannelMapBinanceUs = { {
-    CCAPI_EXCHANGE_NAME_TRADE,
-    CCAPI_EXCHANGE_NAME_WEBSOCKET_BINANCE_BASE_CHANNEL_TRADE }, {
-    CCAPI_EXCHANGE_NAME_MARKET_DEPTH,
-    CCAPI_EXCHANGE_NAME_WEBSOCKET_BINANCE_BASE_CHANNEL_PARTIAL_BOOK_DEPTH }, };
+    CCAPI_TRADE,
+    CCAPI_WEBSOCKET_BINANCE_BASE_CHANNEL_TRADE }, {
+    CCAPI_MARKET_DEPTH,
+    CCAPI_WEBSOCKET_BINANCE_BASE_CHANNEL_PARTIAL_BOOK_DEPTH }, };
     std::map<std::string, std::string> fieldWebsocketChannelMapBinance = { {
-    CCAPI_EXCHANGE_NAME_TRADE,
-    CCAPI_EXCHANGE_NAME_WEBSOCKET_BINANCE_BASE_CHANNEL_TRADE }, {
-    CCAPI_EXCHANGE_NAME_MARKET_DEPTH,
-    CCAPI_EXCHANGE_NAME_WEBSOCKET_BINANCE_BASE_CHANNEL_PARTIAL_BOOK_DEPTH }, };
+    CCAPI_TRADE,
+    CCAPI_WEBSOCKET_BINANCE_BASE_CHANNEL_TRADE }, {
+    CCAPI_MARKET_DEPTH,
+    CCAPI_WEBSOCKET_BINANCE_BASE_CHANNEL_PARTIAL_BOOK_DEPTH }, };
     std::map<std::string, std::string> fieldWebsocketChannelMapBinanceFutures = { {
-    CCAPI_EXCHANGE_NAME_MARKET_DEPTH,
-    CCAPI_EXCHANGE_NAME_WEBSOCKET_BINANCE_BASE_CHANNEL_PARTIAL_BOOK_DEPTH }, };
+    CCAPI_TRADE,
+    CCAPI_WEBSOCKET_BINANCE_BASE_CHANNEL_AGG_TRADE }, {
+    CCAPI_MARKET_DEPTH,
+    CCAPI_WEBSOCKET_BINANCE_BASE_CHANNEL_PARTIAL_BOOK_DEPTH }, };
     std::map<std::string, std::string> fieldWebsocketChannelMapHuobi = { {
-    CCAPI_EXCHANGE_NAME_TRADE,
-    CCAPI_EXCHANGE_NAME_WEBSOCKET_HUOBI_CHANNEL_TRADE_DETAIL }, {
-    CCAPI_EXCHANGE_NAME_MARKET_DEPTH,
-    CCAPI_EXCHANGE_NAME_WEBSOCKET_HUOBI_CHANNEL_MARKET_DEPTH }, };
+    CCAPI_TRADE,
+    CCAPI_WEBSOCKET_HUOBI_CHANNEL_TRADE_DETAIL }, {
+    CCAPI_MARKET_DEPTH,
+    CCAPI_WEBSOCKET_HUOBI_CHANNEL_MARKET_DEPTH }, };
     std::map<std::string, std::string> fieldWebsocketChannelMapOkex = { {
-    CCAPI_EXCHANGE_NAME_TRADE,
-    CCAPI_EXCHANGE_NAME_WEBSOCKET_OKEX_CHANNEL_TRADE }, {
-    CCAPI_EXCHANGE_NAME_MARKET_DEPTH,
-    CCAPI_EXCHANGE_NAME_WEBSOCKET_OKEX_CHANNEL_PUBLIC_DEPTH400 }, };
+    CCAPI_TRADE,
+    CCAPI_WEBSOCKET_OKEX_CHANNEL_TRADE }, {
+    CCAPI_MARKET_DEPTH,
+    CCAPI_WEBSOCKET_OKEX_CHANNEL_PUBLIC_DEPTH400 }, };
     for (auto const& fieldWebsocketChannel : fieldWebsocketChannelMapCoinbase) {
       this->exchangeFieldMap[CCAPI_EXCHANGE_NAME_COINBASE].push_back(fieldWebsocketChannel.first);
     }
@@ -187,9 +197,6 @@ class SessionConfigs final {
       { CCAPI_EXCHANGE_NAME_HUOBI, std::vector<int>({150})},
       { CCAPI_EXCHANGE_NAME_OKEX, std::vector<int>({400})}
     };
-//    this->websocketMaxAvailableMarketDepth = {
-//      { CCAPI_EXCHANGE_NAME_BITSTAMP, 100}
-//    };
     this->urlWebsocketBase = {
       { CCAPI_EXCHANGE_NAME_COINBASE, "wss://ws-feed.pro.coinbase.com"},
       { CCAPI_EXCHANGE_NAME_GEMINI, "wss://api.gemini.com/v1/marketdata"},
@@ -212,11 +219,26 @@ class SessionConfigs final {
       }
     }
     this->urlRestBase = {
-      { CCAPI_EXCHANGE_NAME_BINANCE_US, "https://api.binance.us"},
+      { CCAPI_EXCHANGE_NAME_COINBASE, CCAPI_COINBASE_URL_REST_BASE},
+      { CCAPI_EXCHANGE_NAME_GEMINI, CCAPI_GEMINI_URL_REST_BASE},
+      { CCAPI_EXCHANGE_NAME_BITMEX, CCAPI_BITMEX_URL_REST_BASE},
+      { CCAPI_EXCHANGE_NAME_BINANCE_US, CCAPI_BINANCE_US_URL_REST_BASE},
+      { CCAPI_EXCHANGE_NAME_BINANCE, CCAPI_BINANCE_URL_REST_BASE},
+      { CCAPI_EXCHANGE_NAME_BINANCE_FUTURES, CCAPI_BINANCE_FUTURES_URL_REST_BASE},
+      { CCAPI_EXCHANGE_NAME_HUOBI, CCAPI_HUOBI_URL_REST_BASE},
     };
+  }
+  std::map<std::string, std::map<std::string, std::string> > invertInstrumentSymbolMap(std::map<std::string, std::map<std::string, std::string> > exchangeInstrumentSymbolMap) {
+    std::map<std::string, std::map<std::string, std::string> > exchangeSymbolInstrumentMap;
+    for (const auto & x : exchangeInstrumentSymbolMap) {
+      exchangeSymbolInstrumentMap.insert(std::make_pair(x.first, invertMap(x.second)));
+    }
+    return exchangeSymbolInstrumentMap;
   }
   std::map<std::string, std::map<std::string, std::string> > exchangeInstrumentSymbolMap;
   std::map<std::string, std::map<std::string, std::string> > exchangeInstrumentSymbolMapRest;
+  std::map<std::string, std::map<std::string, std::string> > exchangeSymbolInstrumentMap;
+  std::map<std::string, std::map<std::string, std::string> > exchangeSymbolInstrumentMapRest;
   std::map<std::string, std::vector<std::string> > exchangeInstrumentMap;
   std::map<std::string, std::vector<std::string> > exchangeFieldMap;
   std::map<std::string, std::vector<std::string> > exchangeInstrumentMapRest;

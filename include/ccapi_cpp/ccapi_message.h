@@ -2,13 +2,10 @@
 #define INCLUDE_CCAPI_CPP_CCAPI_MESSAGE_H_
 #include <vector>
 #include <chrono>
-//  include <string>
-#include "ccapi_cpp/ccapi_correlationId.h"
 #include "ccapi_cpp/ccapi_element.h"
 #include "ccapi_cpp/ccapi_logger.h"
-// #include "ccapi_cpp/ccapi_generic_base.h"
 namespace ccapi {
-class Message final {
+class Message CCAPI_FINAL {
  public:
   enum class RecapType {
     UNKNOWN,
@@ -28,7 +25,7 @@ class Message final {
         output = "SOLICITED";
         break;
       default:
-        CCAPI_LOGGER_FATAL("");
+        CCAPI_LOGGER_FATAL(CCAPI_UNSUPPORTED_VALUE);
     }
     return output;
   }
@@ -40,10 +37,16 @@ class Message final {
     SUBSCRIPTION_FAILURE,
     SESSION_CONNECTION_UP,
     SESSION_CONNECTION_DOWN,
-    SESSION_INCORRECT_STATES_FOUND,
+    INCORRECT_STATE_FOUND,
     CREATE_ORDER,
+    CANCEL_ORDER,
+    GET_ORDER,
+    GET_OPEN_ORDERS,
+    CANCEL_OPEN_ORDERS,
+    ORDER_MATCHED,
     RESPONSE_ERROR,
-    REQUEST_FAILURE
+    REQUEST_FAILURE,
+    ERROR
   };
   static std::string typeToString(Type type) {
     std::string output;
@@ -69,11 +72,26 @@ class Message final {
       case Type::SESSION_CONNECTION_DOWN:
         output = "SESSION_CONNECTION_DOWN";
         break;
-      case Type::SESSION_INCORRECT_STATES_FOUND:
-        output = "SESSION_INCORRECT_STATES_FOUND";
+      case Type::INCORRECT_STATE_FOUND:
+        output = "INCORRECT_STATE_FOUND";
         break;
       case Type::CREATE_ORDER:
         output = "CREATE_ORDER";
+        break;
+      case Type::CANCEL_ORDER:
+        output = "CANCEL_ORDER";
+        break;
+      case Type::GET_ORDER:
+        output = "GET_ORDER";
+        break;
+      case Type::GET_OPEN_ORDERS:
+        output = "GET_OPEN_ORDERS";
+        break;
+      case Type::CANCEL_OPEN_ORDERS:
+        output = "CANCEL_OPEN_ORDERS";
+        break;
+      case Type::ORDER_MATCHED:
+        output = "ORDER_MATCHED";
         break;
       case Type::RESPONSE_ERROR:
         output = "RESPONSE_ERROR";
@@ -81,8 +99,10 @@ class Message final {
       case Type::REQUEST_FAILURE:
         output = "REQUEST_FAILURE";
         break;
+      case Type::ERROR:
+        output = "ERROR";
       default:
-        CCAPI_LOGGER_FATAL("");
+        CCAPI_LOGGER_FATAL(CCAPI_UNSUPPORTED_VALUE);
     }
     return output;
   }
@@ -92,20 +112,34 @@ class Message final {
         + ", correlationIdList = " + ccapi::toString(correlationIdList) + "]";
     return output;
   }
+  std::string toStringPretty(const int space = 2, const int leftToIndent = 0, const bool indentFirstLine = true) const {
+    std::string sl(leftToIndent, ' ');
+    std::string ss(leftToIndent + space, ' ');
+    std::string output = (indentFirstLine ? sl : "") + "Message [\n" + ss + "type = " + typeToString(type) + ",\n" + ss + "recapType = " + recapTypeToString(recapType)
+        + ",\n" + ss + "time = " + UtilTime::getISOTimestamp(time) + ",\n" + ss + "timeReceived = " + UtilTime::getISOTimestamp(timeReceived) + ",\n" + ss + "elementList = " + ccapi::firstNToStringPretty(elementList, 10, space, space + leftToIndent, false)
+        + ",\n" + ss + "correlationIdList = " + ccapi::toString(correlationIdList) + "\n" + sl + "]";
+    return output;
+  }
   const std::vector<Element>& getElementList() const {
     return elementList;
   }
   void setElementList(const std::vector<Element>& elementList) {
     this->elementList = elementList;
   }
-  const std::vector<CorrelationId>& getCorrelationIdList() const {
+  const std::vector<std::string>& getCorrelationIdList() const {
     return correlationIdList;
   }
-  void setCorrelationIdList(const std::vector<CorrelationId>& correlationIdList) {
+  void setCorrelationIdList(const std::vector<std::string>& correlationIdList) {
     this->correlationIdList = correlationIdList;
   }
   TimePoint getTime() const {
     return time;
+  }
+  std::string getTimeISO() const {
+    return UtilTime::getISOTimestamp(time);
+  }
+  std::pair<long long, long long> getTimePair() const {
+    return UtilTime::divide(time);
   }
   void setTime(TimePoint time) {
     this->time = time;
@@ -125,6 +159,12 @@ class Message final {
   TimePoint getTimeReceived() const {
     return timeReceived;
   }
+  std::string getTimeReceivedISO() const {
+    return UtilTime::getISOTimestamp(timeReceived);
+  }
+  std::pair<long long, long long> getTimeReceivedPair() const {
+    return UtilTime::divide(timeReceived);
+  }
   void setTimeReceived(TimePoint timeReceived) {
     this->timeReceived = timeReceived;
   }
@@ -133,7 +173,7 @@ class Message final {
   TimePoint time{std::chrono::seconds{0}};
   TimePoint timeReceived{std::chrono::seconds{0}};
   std::vector<Element> elementList;
-  std::vector<CorrelationId> correlationIdList;
+  std::vector<std::string> correlationIdList;
   Type type{Type::UNKNOWN};
   RecapType recapType{RecapType::UNKNOWN};
 };

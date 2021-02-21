@@ -4,11 +4,10 @@
 #include <map>
 #include <mutex>
 #include <condition_variable>
-#include "ccapi_cpp/ccapi_correlationId.h"
 #include "ccapi_cpp/ccapi_macro.h"
-#include "ccapi_cpp/ccapi_util.h"
+#include "ccapi_cpp/ccapi_util_private.h"
 namespace ccapi {
-class Request final {
+class Request CCAPI_FINAL {
  public:
   enum class Operation {
       UNKNOWN,
@@ -27,23 +26,45 @@ class Request final {
       case Operation::CREATE_ORDER:
         output = "CREATE_ORDER";
         break;
+      case Operation::CANCEL_ORDER:
+        output = "CANCEL_ORDER";
+        break;
+      case Operation::GET_ORDER:
+        output = "GET_ORDER";
+        break;
+      case Operation::GET_OPEN_ORDERS:
+        output = "GET_OPEN_ORDERS";
+        break;
+      case Operation::CANCEL_OPEN_ORDERS:
+        output = "CANCEL_OPEN_ORDERS";
+        break;
       default:
-        CCAPI_LOGGER_FATAL("");
+        CCAPI_LOGGER_FATAL(CCAPI_UNSUPPORTED_VALUE);
     }
     return output;
   }
-  Request(Operation operation, std::map<std::string, std::string> credential, std::string exchange, std::string instrument = "", CorrelationId correlationId =
-                   CorrelationId())
-      : operation(operation), credential(credential), exchange(exchange), instrument(instrument), correlationId(correlationId) {
-    this->serviceName = CCAPI_EXCHANGE_NAME_EXECUTION_MANAGEMENT;
+  Request(Operation operation, std::string exchange, std::string instrument = "", std::string correlationId =
+      "", std::map<std::string, std::string> credential = {})
+      : operation(operation), exchange(exchange), instrument(instrument), correlationId(correlationId), credential(credential) {
+    this->serviceName = CCAPI_EXECUTION_MANAGEMENT;
+    if (this->correlationId.empty()) {
+      this->correlationId = UtilString::generateRandomString(CCAPI_CORRELATION_ID_GENERATED_LENGTH);
+    }
   }
+#ifdef SWIG
+  Request() {}
+#endif
   std::string toString() const {
+    std::map<std::string, std::string> shortCredential;
+    for (const auto& x : credential) {
+      shortCredential.insert(std::make_pair(x.first, UtilString::firstNCharacter(x.second, CCAPI_CREDENTIAL_DISPLAY_LENGTH)));
+    }
     std::string output = "Request [exchange = " + exchange + ", instrument = " + instrument + ", serviceName = "+serviceName+", correlationId = "
-        + correlationId.toString() +", paramMap = "+ccapi::toString(paramMap)+ ", credential = "
-        + ccapi::toString(credential) + ", operation = " + operationToString(operation) + "]";
+        + correlationId +", paramList = "+ccapi::toString(paramList)+ ", credential = "
+        + ccapi::toString(shortCredential) + ", operation = " + operationToString(operation) + "]";
     return output;
   }
-  const CorrelationId& getCorrelationId() const {
+  const std::string& getCorrelationId() const {
     return correlationId;
   }
   const std::string& getExchange() const {
@@ -58,25 +79,25 @@ class Request final {
   const std::string& getServiceName() const {
     return serviceName;
   }
-  void setParam(std::string name, std::string value) {
-      this->paramMap[name] = value;
-  }
-  std::string getParam(std::string name) {
-    return this->paramMap.at(name);
-  }
-  const std::map<std::string, std::string>& getParamMap() const {
-    return paramMap;
+  void appendParam(const std::map<std::string, std::string>& param) {
+      this->paramList.push_back(param);
   }
   Operation getOperation() const {
     return operation;
+  }
+  const std::vector<std::map<std::string, std::string> >& getParamList() const {
+    return paramList;
+  }
+  void setParamList(const std::vector<std::map<std::string, std::string> >& paramList) {
+    this->paramList = paramList;
   }
 
  private:
   std::string exchange;
   std::string instrument;
   std::string serviceName;
-  CorrelationId correlationId;
-  std::map<std::string, std::string> paramMap;
+  std::string correlationId;
+  std::vector<std::map<std::string, std::string> > paramList;
   std::map<std::string, std::string> credential;
   Operation operation;
 };
