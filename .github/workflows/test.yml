@@ -124,9 +124,9 @@ jobs:
     #       )
     #     elseif ("${{ runner.os }}" STREQUAL "Windows")
     #       execute_process(
-            COMMAND vcpkg install openssl:x64-windows
-          )
-        endif()
+        #     COMMAND vcpkg install openssl:x64-windows
+        #   )
+        # endif()
 
     - name: Install SWIG
       shell: cmake -P {0}
